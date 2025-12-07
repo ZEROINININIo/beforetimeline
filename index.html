@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova Labs Archive // RELIC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Noto Sans SC"', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'monospace'],
+              display: ['"JetBrains Mono"', 'monospace'],
+            },
+            colors: {
+              'ash-black': 'var(--ash-black)',
+              'ash-dark': 'var(--ash-dark)',
+              'ash-gray': 'var(--ash-gray)',
+              'ash-light': 'var(--ash-light)',
+              'ash-white': 'var(--ash-white)',
+              'retro-paper': 'var(--retro-paper)', 
+            },
+            animation: {
+              'glitch': 'glitch 1s linear infinite',
+              'scanline': 'scanline 8s linear infinite',
+              'fade-in': 'fadeIn 0.5s ease-out forwards',
+              'slide-in': 'slideIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+              'crash': 'crash 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both infinite',
+            },
+            keyframes: {
+              glitch: {
+                '2%, 64%': { transform: 'translate(2px,0) skew(0deg)' },
+                '4%, 60%': { transform: 'translate(-2px,0) skew(0deg)' },
+                '62%': { transform: 'translate(0,0) skew(5deg)' },
+              },
+              scanline: {
+                '0%': { transform: 'translateY(-100%)' },
+                '100%': { transform: 'translateY(100%)' }
+              },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' }
+              },
+              slideIn: {
+                '0%': { opacity: '0', transform: 'translateY(20px) scale(0.98)' },
+                '100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
+              },
+              crash: {
+                '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root {
+        /* Default Dark Theme (Ash/Zinc) */
+        --ash-black: #09090b;
+        --ash-dark: #18181b;
+        --ash-gray: #71717a;
+        --ash-light: #e4e4e7;
+        --ash-white: #fafafa;
+        --retro-paper: #d4d4d8;
+        
+        --foreground: #e4e4e7;
+        --background: #09090b;
+        
+        --grid-color: #27272a;
+        --halftone-color: #27272a;
+      }
+
+      body.light-theme {
+        /* Light Theme Mapping (Inverted Contrast) */
+        --ash-black: #fafafa; /* Main BG becomes Light */
+        --ash-dark: #e4e4e7;  /* Secondary BG becomes lighter grey */
+        --ash-gray: #52525b;  /* Gray text becomes darker for readability */
+        --ash-light: #18181b; /* Light Text becomes Dark Text */
+        --ash-white: #09090b; /* White Accents become Black Accents */
+        --retro-paper: #e4e4e7; /* Paper stays light greyish */
+        
+        --foreground: #18181b;
+        --background: #fafafa;
+        
+        --grid-color: #e4e4e7;
+        --halftone-color: #e4e4e7;
+      }
+      
+      body {
+        background-color: var(--background);
+        color: var(--foreground);
+        font-family: 'JetBrains Mono', monospace;
+        overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      /* Global Reset for Retro Feel */
+      * {
+        border-radius: 0 !important; /* STRICT NO ROUNDED CORNERS */
+        border-color: var(--ash-gray); /* Default border color fallback */
+      }
+
+      /* Custom Hard Scrollbar */
+      ::-webkit-scrollbar {
+        width: 12px;
+        background: var(--ash-dark);
+        border-left: 1px solid var(--ash-gray);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--ash-gray); 
+        border: 2px solid var(--ash-dark);
+        box-shadow: inset 1px 1px 0px rgba(255,255,255,0.2);
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--ash-light); 
+      }
+
+      /* Texture Patterns */
+      .bg-halftone {
+        background-image: radial-gradient(var(--halftone-color) 1px, transparent 1px);
+        background-size: 4px 4px;
+      }
+      
+      .bg-grid-hard {
+        background-image: 
+          linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+
+      /* Noise overlay */
+      .noise-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 9997;
+        opacity: 0.03;
+        background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+      }
+      
+      /* Hard Shadow Utility */
+      .shadow-hard {
+        box-shadow: 4px 4px 0px 0px currentColor;
+      }
+      .shadow-hard-sm {
+        box-shadow: 2px 2px 0px 0px currentColor;
+      }
+
+      /* === CRT EFFECTS === */
+      
+      /* 1. Scanlines */
+      body.crt-enabled::before {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(255,255,255,0),
+          rgba(255,255,255,0) 50%,
+          rgba(0,0,0,0.1) 50%,
+          rgba(0,0,0,0.1)
+        );
+        background-size: 100% 4px;
+        z-index: 10000;
+        pointer-events: none;
+      }
+
+      /* 2. Vignette & Glow */
+      body.crt-enabled::after {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        z-index: 10001;
+        pointer-events: none;
+      }
+
+      /* 3. Flicker & Chromatic Aberration */
+      body.crt-enabled #root {
+        animation: crt-flicker 0.15s infinite;
+        text-shadow: 1px 0 2px rgba(255,0,0,0.15), -1px 0 2px rgba(0,255,255,0.15);
+      }
+
+      @keyframes crt-flicker {
+        0% { opacity: 0.99; }
+        5% { opacity: 0.96; }
+        10% { opacity: 0.98; }
+        15% { opacity: 0.99; }
+        20% { opacity: 0.96; }
+        25% { opacity: 0.99; }
+        30% { opacity: 0.97; }
+        35% { opacity: 0.99; }
+        40% { opacity: 0.98; }
+        45% { opacity: 0.96; }
+        50% { opacity: 0.98; }
+        55% { opacity: 0.99; }
+        60% { opacity: 0.96; }
+        65% { opacity: 0.99; }
+        70% { opacity: 0.98; }
+        75% { opacity: 0.99; }
+        80% { opacity: 0.96; }
+        85% { opacity: 0.99; }
+        90% { opacity: 0.98; }
+        95% { opacity: 0.99; }
+        100% { opacity: 0.97; }
+      }
+
+      /* --- Extreme Glitch for Boot Sequence --- */
+      .glitch-text-heavy {
+        position: relative;
+        color: white;
+      }
+      .glitch-text-heavy::before,
+      .glitch-text-heavy::after {
+        content: attr(data-text);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+      }
+      .glitch-text-heavy::before {
+        left: 2px;
+        text-shadow: -1px 0 #ff00c1;
+        clip: rect(44px, 450px, 56px, 0);
+        animation: glitch-anim-1 5s infinite linear alternate-reverse;
+      }
+      .glitch-text-heavy::after {
+        left: -2px;
+        text-shadow: -1px 0 #00fff9;
+        clip: rect(44px, 450px, 56px, 0);
+        animation: glitch-anim-2 5s infinite linear alternate-reverse;
+      }
+      
+      @keyframes glitch-anim-1 {
+        0% { clip: rect(30px, 9999px, 10px, 0); }
+        20% { clip: rect(80px, 9999px, 90px, 0); }
+        40% { clip: rect(10px, 9999px, 40px, 0); }
+        60% { clip: rect(40px, 9999px, 20px, 0); }
+        80% { clip: rect(20px, 9999px, 60px, 0); }
+        100% { clip: rect(50px, 9999px, 30px, 0); }
+      }
+      @keyframes glitch-anim-2 {
+        0% { clip: rect(10px, 9999px, 80px, 0); }
+        20% { clip: rect(80px, 9999px, 10px, 0); }
+        40% { clip: rect(40px, 9999px, 50px, 0); }
+        60% { clip: rect(10px, 9999px, 90px, 0); }
+        80% { clip: rect(50px, 9999px, 20px, 0); }
+        100% { clip: rect(20px, 9999px, 40px, 0); }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/"
+  }
+}
+</script>
+</head>
+  <body class="crt-enabled">
+    <div id="root"></div>
+  </body>
+</html>
