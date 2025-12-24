@@ -35,6 +35,9 @@ const AUDIO_MAP = {
   byaki: [
     "https://cik07-cos.7moor-fs2.com/im/4d2c3f00-7d4c-11e5-af15-41bf63ae4ea0/e49d774395d5381a/Byaki..mp3",
     "https://lz.qaiu.top/parser?url=https://sbcnm.lanzoum.com/iCU593dnamda"
+  ],
+  terminal: [
+    "https://lz.qaiu.top/parser?url=https://sbcnm.lanzoum.com/i09IZ3effnne"
   ]
 };
 
@@ -83,6 +86,7 @@ const App: React.FC = () => {
   
   // BGM Context State
   const [activeSideStoryVolumeId, setActiveSideStoryVolumeId] = useState<string | null>(null);
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   
   // Transition State
   const [isEnteringStory, setIsEnteringStory] = useState(false);
@@ -173,6 +177,9 @@ const App: React.FC = () => {
   // Memoize to prevent playback interruption on re-renders unless track actually changes
   // Using stable AUDIO_MAP references ensures the array prop remains referentially equal
   const audioConfig = useMemo(() => {
+    if (isTerminalOpen) {
+        return { sources: AUDIO_MAP.terminal, title: "Static Menu", composer: "静止之章" };
+    }
     if (activeTab === 'sidestories') {
         // Only switch BGM if inside a specific volume
         if (activeSideStoryVolumeId === 'VOL_DAILY') {
@@ -189,7 +196,7 @@ const App: React.FC = () => {
     }
     // Default / Home / Reader
     return { sources: AUDIO_MAP.main, title: "TIMELINE MAIN", composer: "NOVA_OST" };
-  }, [activeTab, activeSideStoryVolumeId]);
+  }, [activeTab, activeSideStoryVolumeId, isTerminalOpen]);
 
   return (
     <>
@@ -262,6 +269,9 @@ const App: React.FC = () => {
             audioSources={audioConfig.sources}
             trackTitle={audioConfig.title}
             trackComposer={audioConfig.composer}
+            // Terminal Handlers
+            onTerminalOpen={() => setIsTerminalOpen(true)}
+            onTerminalClose={() => setIsTerminalOpen(false)}
           />
           
           <main className="flex-1 h-full overflow-hidden relative z-10 border-l-2 border-ash-dark">
@@ -294,6 +304,9 @@ const App: React.FC = () => {
                   isLightTheme={isLightTheme}
                   onVolumeChange={setActiveSideStoryVolumeId}
                   readerFont={readerFont}
+                  // Terminal Handlers
+                  onTerminalOpen={() => setIsTerminalOpen(true)}
+                  onTerminalClose={() => setIsTerminalOpen(false)}
                 />
               )}
             </div>
