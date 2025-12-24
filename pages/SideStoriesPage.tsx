@@ -16,9 +16,11 @@ interface SideStoriesPageProps {
   isLightTheme: boolean;
   onVolumeChange: (volumeId: string | null) => void;
   readerFont: ReaderFont;
+  onTerminalOpen?: () => void;
+  onTerminalClose?: () => void;
 }
 
-const SideStoriesPage: React.FC<SideStoriesPageProps> = ({ language, isLightTheme, onVolumeChange, readerFont }) => {
+const SideStoriesPage: React.FC<SideStoriesPageProps> = ({ language, isLightTheme, onVolumeChange, readerFont, onTerminalOpen, onTerminalClose }) => {
   // Navigation State: 'volumes' -> 'chapters' -> 'extra_directory' (optional) -> 'reader'
   const [viewMode, setViewMode] = useState<'volumes' | 'chapters' | 'extra_directory' | 'reader'>('volumes');
   const [activeVolume, setActiveVolume] = useState<SideStoryVolume | null>(null);
@@ -63,6 +65,16 @@ const SideStoriesPage: React.FC<SideStoriesPageProps> = ({ language, isLightThem
       setViewMode('volumes');
   };
 
+  const handleOpenTerminal = () => {
+      setShowTerminal(true);
+      if (onTerminalOpen) onTerminalOpen();
+  };
+
+  const handleCloseTerminal = () => {
+      setShowTerminal(false);
+      if (onTerminalClose) onTerminalClose();
+  };
+
   // Render Animation if active
   if (isAnimating && activeVolume) {
     return (
@@ -82,7 +94,7 @@ const SideStoriesPage: React.FC<SideStoriesPageProps> = ({ language, isLightThem
                 volumes={sideStoryVolumes}
                 onSelectVolume={handleVolumeSelect}
                 onOpenCharModal={() => setShowCharModal(true)}
-                onOpenTerminal={() => setShowTerminal(true)}
+                onOpenTerminal={handleOpenTerminal}
                 language={language}
                 isLightTheme={isLightTheme}
             />
@@ -95,7 +107,7 @@ const SideStoriesPage: React.FC<SideStoriesPageProps> = ({ language, isLightThem
             {showTerminal && (
                 <TemporaryTerminal 
                     language={language}
-                    onClose={() => setShowTerminal(false)}
+                    onClose={handleCloseTerminal}
                 />
             )}
         </>

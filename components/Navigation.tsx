@@ -31,6 +31,9 @@ interface NavigationProps {
   audioSources: string[];
   trackTitle: string;
   trackComposer: string;
+  // Terminal Handlers
+  onTerminalOpen?: () => void;
+  onTerminalClose?: () => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ 
@@ -38,7 +41,8 @@ const Navigation: React.FC<NavigationProps> = ({
     crtEnabled, setCrtEnabled, isLightTheme, setIsLightTheme,
     bgmPlaying, setBgmPlaying, bgmVolume, setBgmVolume,
     readerFont, setReaderFont,
-    audioSources, trackTitle, trackComposer
+    audioSources, trackTitle, trackComposer,
+    onTerminalOpen, onTerminalClose
 }) => {
   const [showMobileSettings, setShowMobileSettings] = useState(false);
   const [showDesktopSettings, setShowDesktopSettings] = useState(false);
@@ -84,6 +88,16 @@ const Navigation: React.FC<NavigationProps> = ({
       setExitModalStep(2); // Go to Step 2
   };
 
+  const handleOpenTerminal = () => {
+      setShowTerminal(true);
+      if (onTerminalOpen) onTerminalOpen();
+  };
+
+  const handleCloseTerminal = () => {
+      setShowTerminal(false);
+      if (onTerminalClose) onTerminalClose();
+  };
+
   return (
     <>
       {showRoadmap && (
@@ -97,7 +111,7 @@ const Navigation: React.FC<NavigationProps> = ({
       {showTerminal && (
           <TemporaryTerminal 
             language={language}
-            onClose={() => setShowTerminal(false)}
+            onClose={handleCloseTerminal}
           />
       )}
 
@@ -217,7 +231,7 @@ const Navigation: React.FC<NavigationProps> = ({
 
           {/* New Temporary Terminal Button - Unified Style */}
           <button 
-            onClick={() => setShowTerminal(true)}
+            onClick={handleOpenTerminal}
             className={`
                 hidden lg:flex w-full flex-col lg:flex-row items-center justify-start transition-all duration-300 group relative overflow-hidden
                 lg:py-6 lg:px-6 lg:my-1 lg:border-l-4 border-y-2 lg:border-y-0 lg:border-r-0
@@ -336,7 +350,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     </button>
 
                     <button 
-                      onClick={() => { setShowTerminal(true); setShowMobileSettings(false); }}
+                      onClick={() => { handleOpenTerminal(); setShowMobileSettings(false); }}
                       className="flex items-center justify-between w-full px-3 py-3 border-2 border-emerald-900/50 bg-emerald-950/10 text-emerald-500 hover:bg-emerald-900/20 transition-all group shadow-hard-sm"
                     >
                        <div className="flex items-center gap-3">
@@ -426,7 +440,7 @@ const Navigation: React.FC<NavigationProps> = ({
 
                 <div className="mt-10 pt-6 border-t border-dashed border-ash-gray/30 flex justify-between items-center relative z-10">
                     <div className="text-[10px] font-mono text-ash-gray">
-                        SYSTEM_BUILD: 2025.12.24<br/>
+                        SYSTEM_BUILD: 2025.12.21<br/>
                         ARCHIVE_VER: TL.1.16-D
                     </div>
                     <button 
