@@ -1,19 +1,24 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nova Labs Archive // RELIC</title>
+    <!-- Removed importmap to prevent conflicts with bundlers (Vite/Webpack) on Vercel -->
+    <link rel="icon" href="https://free.picui.cn/free/2025/12/08/6936e856897d6.png" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@400;700&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
               sans: ['"Noto Sans SC"', 'sans-serif'],
+              serif: ['"Noto Serif SC"', 'serif'],
               mono: ['"JetBrains Mono"', 'monospace'],
               display: ['"JetBrains Mono"', 'monospace'],
+              'custom-02': ['"CustomFont02"', '"Noto Sans SC"', 'sans-serif'],
             },
             colors: {
               'ash-black': 'var(--ash-black)',
@@ -29,12 +34,36 @@
               'fade-in': 'fadeIn 0.5s ease-out forwards',
               'slide-in': 'slideIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
               'crash': 'crash 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both infinite',
+              'spin-slow': 'spin 12s linear infinite',
+              'spin-reverse-slow': 'spinReverse 15s linear infinite',
+              'zoom-in-fast': 'zoomIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+              'tunnel': 'tunnel 2s linear infinite',
+              'data-rain': 'dataRain 2s linear infinite',
+              'data-rain-card': 'dataRainCard 2s linear infinite',
+              'shake-violent': 'shakeViolent 0.25s infinite',
+              'shimmer': 'shimmer 2s linear infinite',
+              'float-up-slow': 'floatUp 20s linear infinite',
+              'float-up-medium': 'floatUp 15s linear infinite',
+              'float-up-fast': 'floatUp 10s linear infinite',
             },
             keyframes: {
               glitch: {
                 '2%, 64%': { transform: 'translate(2px,0) skew(0deg)' },
                 '4%, 60%': { transform: 'translate(-2px,0) skew(0deg)' },
                 '62%': { transform: 'translate(0,0) skew(5deg)' },
+              },
+              shakeViolent: {
+                '0%': { transform: 'translate(1px, 1px) rotate(0deg)' },
+                '10%': { transform: 'translate(-1px, -2px) rotate(-1deg)' },
+                '20%': { transform: 'translate(-3px, 0px) rotate(1deg)' },
+                '30%': { transform: 'translate(3px, 2px) rotate(0deg)' },
+                '40%': { transform: 'translate(1px, -1px) rotate(1deg)' },
+                '50%': { transform: 'translate(-1px, 2px) rotate(-1deg)' },
+                '60%': { transform: 'translate(-3px, 1px) rotate(0deg)' },
+                '70%': { transform: 'translate(3px, 1px) rotate(-1deg)' },
+                '80%': { transform: 'translate(-1px, -1px) rotate(1deg)' },
+                '90%': { transform: 'translate(1px, 2px) rotate(0deg)' },
+                '100%': { transform: 'translate(1px, -2px) rotate(-1deg)' }
               },
               scanline: {
                 '0%': { transform: 'translateY(-100%)' },
@@ -53,6 +82,45 @@
                 '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
                 '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
                 '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+              },
+              spin: {
+                '0%': { transform: 'rotate(0deg)' },
+                '100%': { transform: 'rotate(360deg)' }
+              },
+              spinReverse: {
+                '0%': { transform: 'rotate(360deg)' },
+                '100%': { transform: 'rotate(0deg)' }
+              },
+              zoomIn: {
+                '0%': { transform: 'scale(0)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' }
+              },
+              tunnel: {
+                '0%': { transform: 'scale(1)', opacity: '0.1' },
+                '50%': { opacity: '0.5' },
+                '100%': { transform: 'scale(4)', opacity: '0' }
+              },
+              dataRain: {
+                '0%': { transform: 'translateY(-100%)', opacity: '0' },
+                '20%': { opacity: '1' },
+                '80%': { opacity: '1' },
+                '100%': { transform: 'translateY(100vh)', opacity: '0' }
+              },
+              dataRainCard: {
+                '0%': { transform: 'translateY(0)', opacity: '0' },
+                '10%': { opacity: '1' },
+                '90%': { opacity: '1' },
+                '100%': { transform: 'translateY(300px)', opacity: '0' }
+              },
+              shimmer: {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(200%)' }
+              },
+              floatUp: {
+                '0%': { transform: 'translateY(110vh) rotateZ(0deg) scale(0.5)', opacity: '0' },
+                '10%': { opacity: '0.8' },
+                '90%': { opacity: '0.8' },
+                '100%': { transform: 'translateY(-10vh) rotateZ(180deg) scale(1.5)', opacity: '0' }
               }
             }
           }
@@ -74,6 +142,13 @@
         
         --grid-color: #27272a;
         --halftone-color: #27272a;
+      }
+
+      @font-face {
+        font-family: 'CustomFont02';
+        src: url('/02.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
       }
 
       body.light-theme {
@@ -98,6 +173,13 @@
         font-family: 'JetBrains Mono', monospace;
         overflow-x: hidden;
         transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      /* Hide native cursor on desktop to use JS CustomCursor */
+      @media (pointer: fine) {
+        *, button, a, input, select, textarea {
+          cursor: none !important;
+        }
       }
 
       /* Global Reset for Retro Feel */
@@ -174,112 +256,185 @@
           rgba(0,0,0,0.1)
         );
         background-size: 100% 4px;
-        z-index: 10000;
+        z-index: 9998;
         pointer-events: none;
+        animation: scanline 8s linear infinite;
       }
 
-      /* 2. Vignette & Glow */
-      body.crt-enabled::after {
-        content: " ";
-        display: block;
+      /* Legacy Readable Glitch Effect */
+      .legacy-text {
+        text-shadow: 1px 0 0 rgba(255,0,0,0.4), -1px 0 0 rgba(0,0,255,0.4);
+        animation: text-flicker 4s infinite;
+      }
+      @keyframes text-flicker {
+        0% { opacity: 1; }
+        95% { opacity: 1; }
+        96% { opacity: 0.8; transform: skewX(1deg); }
+        97% { opacity: 1; transform: skewX(0deg); }
+        98% { opacity: 1; }
+        99% { opacity: 0.9; }
+        100% { opacity: 1; }
+      }
+
+      /* Pre-loader specific styles */
+      .loading-container {
         position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
-        box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
-        z-index: 10001;
-        pointer-events: none;
+        inset: 0; /* Ensures full cover on mobile */
+        width: 100%;
+        height: 100%;
+        background-color: #09090b;
+        color: #71717a;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: 'JetBrains Mono', monospace;
+        z-index: 99999; /* Higher than almost everything */
+        transition: opacity 0.5s ease-out;
       }
-
-      /* 3. Flicker & Chromatic Aberration */
-      body.crt-enabled #root {
-        animation: crt-flicker 0.15s infinite;
-        text-shadow: 1px 0 2px rgba(255,0,0,0.15), -1px 0 2px rgba(0,255,255,0.15);
+      .star-icon {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 32px;
+        fill: #e4e4e7;
+        animation: star-pulse 2s infinite ease-in-out;
+        filter: drop-shadow(0 0 8px rgba(228, 228, 231, 0.4));
       }
-
-      @keyframes crt-flicker {
-        0% { opacity: 0.99; }
-        5% { opacity: 0.96; }
-        10% { opacity: 0.98; }
-        15% { opacity: 0.99; }
-        20% { opacity: 0.96; }
-        25% { opacity: 0.99; }
-        30% { opacity: 0.97; }
-        35% { opacity: 0.99; }
-        40% { opacity: 0.98; }
-        45% { opacity: 0.96; }
-        50% { opacity: 0.98; }
-        55% { opacity: 0.99; }
-        60% { opacity: 0.96; }
-        65% { opacity: 0.99; }
-        70% { opacity: 0.98; }
-        75% { opacity: 0.99; }
-        80% { opacity: 0.96; }
-        85% { opacity: 0.99; }
-        90% { opacity: 0.98; }
-        95% { opacity: 0.99; }
-        100% { opacity: 0.97; }
+      .loading-text {
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        margin-bottom: 24px;
+        text-transform: uppercase;
+        animation: text-blink 1s infinite alternate;
       }
-
-      /* --- Extreme Glitch for Boot Sequence --- */
-      .glitch-text-heavy {
+      .loading-bar {
+        width: 160px;
+        height: 1px;
+        background-color: #27272a;
         position: relative;
-        color: white;
+        overflow: hidden;
       }
-      .glitch-text-heavy::before,
-      .glitch-text-heavy::after {
-        content: attr(data-text);
+      .loading-bar::after {
+        content: '';
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
         height: 100%;
-        background: #000;
+        width: 30%;
+        background-color: #e4e4e7;
+        box-shadow: 0 0 10px #e4e4e7;
+        animation: loader-anim 1.2s infinite cubic-bezier(0.4, 0, 0.2, 1);
       }
-      .glitch-text-heavy::before {
-        left: 2px;
-        text-shadow: -1px 0 #ff00c1;
-        clip: rect(44px, 450px, 56px, 0);
-        animation: glitch-anim-1 5s infinite linear alternate-reverse;
+      @keyframes loader-anim {
+        0% { left: -30%; }
+        100% { left: 100%; }
       }
-      .glitch-text-heavy::after {
-        left: -2px;
-        text-shadow: -1px 0 #00fff9;
-        clip: rect(44px, 450px, 56px, 0);
-        animation: glitch-anim-2 5s infinite linear alternate-reverse;
+      @keyframes star-pulse {
+        0%, 100% { transform: scale(0.9); opacity: 0.7; }
+        50% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 12px rgba(228, 228, 231, 0.8)); }
+      }
+      @keyframes text-blink {
+        0% { opacity: 0.5; }
+        100% { opacity: 1; }
       }
       
-      @keyframes glitch-anim-1 {
-        0% { clip: rect(30px, 9999px, 10px, 0); }
-        20% { clip: rect(80px, 9999px, 90px, 0); }
-        40% { clip: rect(10px, 9999px, 40px, 0); }
-        60% { clip: rect(40px, 9999px, 20px, 0); }
-        80% { clip: rect(20px, 9999px, 60px, 0); }
-        100% { clip: rect(50px, 9999px, 30px, 0); }
+      /* Explicit Keyframes for Inline Styles */
+      @keyframes dataRainCard {
+        0% { transform: translateY(0); opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { transform: translateY(300px); opacity: 0; }
       }
-      @keyframes glitch-anim-2 {
-        0% { clip: rect(10px, 9999px, 80px, 0); }
-        20% { clip: rect(80px, 9999px, 10px, 0); }
-        40% { clip: rect(40px, 9999px, 50px, 0); }
-        60% { clip: rect(10px, 9999px, 90px, 0); }
-        80% { clip: rect(50px, 9999px, 20px, 0); }
-        100% { clip: rect(20px, 9999px, 40px, 0); }
+      @keyframes dataRain {
+        0% { transform: translateY(-100%); opacity: 0; }
+        20% { opacity: 1; }
+        80% { opacity: 1; }
+        100% { transform: translateY(100vh); opacity: 0; }
+      }
+
+      /* === ATMOSPHERIC KEYFRAMES FOR INLINE STYLES === */
+      @keyframes drift-vertical {
+        0% { transform: translateY(120vh) scale(0.5); opacity: 0; }
+        10% { opacity: var(--base-opacity, 0.5); }
+        90% { opacity: var(--base-opacity, 0.5); }
+        100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+      }
+      @keyframes drift-horizontal {
+        0% { transform: translateX(-50px) rotateZ(-5deg); }
+        100% { transform: translateX(50px) rotateZ(5deg); }
+      }
+      @keyframes tumble-3d {
+        0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+        33% { transform: rotateX(120deg) rotateY(60deg) rotateZ(10deg); }
+        66% { transform: rotateX(240deg) rotateY(120deg) rotateZ(-10deg); }
+        100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(0deg); }
+      }
+      @keyframes pulse-glow {
+        0% { opacity: 0.3; transform: scale(1); }
+        100% { opacity: 0.6; transform: scale(1.2); }
+      }
+      @keyframes beam-scan {
+        0% { transform: translateX(-20%) rotate(15deg); opacity: 0; }
+        20% { opacity: 0.1; }
+        80% { opacity: 0.1; }
+        100% { transform: translateX(120%) rotate(15deg); opacity: 0; }
       }
     </style>
   <script type="importmap">
 {
   "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.1",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/"
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0"
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
-  <body class="crt-enabled">
+  <body>
+    <!-- Initial Pre-loader (Outside Root for persistence) -->
+    <div id="initial-loader" class="loading-container">
+        <!-- Four-Pointed Star SVG -->
+        <svg class="star-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 0 C50 0 65 35 100 50 C65 65 50 100 50 100 C50 100 35 65 0 50 C35 35 50 0 50 0Z" />
+        </svg>
+        <div class="loading-text" id="loader-text">ESTABLISHING LINK...</div>
+        <div class="loading-bar"></div>
+        <div id="error-msg" style="display:none; color: #ef4444; font-size: 10px; margin-top: 10px; max-width: 80%; text-align: center;"></div>
+    </div>
+
     <div id="root"></div>
+    
+    <!-- Fail-safe script: If app fails to load in 5 seconds, remove loader or show error -->
+    <script>
+      window.addEventListener('error', function(e) {
+        const loader = document.getElementById('initial-loader');
+        const errText = document.getElementById('error-msg');
+        const loadText = document.getElementById('loader-text');
+        
+        if (loader && errText) {
+           loadText.innerText = "CONNECTION FAILED";
+           loadText.style.color = "#ef4444";
+           errText.style.display = "block";
+           errText.innerText = "ERR: " + e.message;
+           // Optional: Remove loader to show what rendered underneath
+           // loader.style.display = 'none'; 
+        }
+      });
+
+      setTimeout(() => {
+        const loader = document.getElementById('initial-loader');
+        // If loader still exists and is visible
+        if (loader && loader.style.opacity !== '0') {
+           console.warn("Loader timed out. Forcing removal.");
+           loader.style.transition = "opacity 0.5s";
+           loader.style.opacity = '0';
+           setTimeout(() => loader.remove(), 500);
+        }
+      }, 5000); // 5 seconds timeout
+    </script>
+    
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

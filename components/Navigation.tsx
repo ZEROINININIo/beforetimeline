@@ -1,9 +1,16 @@
+
 import React, { useState } from 'react';
-import { Database, Book, Users, Home, Clock, Cpu, Settings, Globe } from 'lucide-react';
+import { Database, Book, Users, Home, GitBranch, Settings, Globe, X, ExternalLink, Headphones, MessageSquare, Map, ArrowRight, Radio } from 'lucide-react';
 import BackgroundMusic from './BackgroundMusic';
 import CRTToggle from './CRTToggle';
 import ThemeToggle from './ThemeToggle';
+import FullscreenToggle from './FullscreenToggle';
+import FontSelector from './fonts/FontSelector';
 import { Language } from '../types';
+import { ReaderFont } from './fonts/fontConfig';
+import RoadmapPage from '../pages/RoadmapPage'; 
+import TemporaryTerminal from './TemporaryTerminal'; 
+import { navigationData, exitModalData } from '../data/navigationData';
 
 interface NavigationProps {
   activeTab: string;
@@ -14,64 +21,41 @@ interface NavigationProps {
   setCrtEnabled: (val: boolean) => void;
   isLightTheme: boolean;
   setIsLightTheme: (val: boolean) => void;
+  bgmPlaying: boolean;
+  setBgmPlaying: (val: boolean) => void;
+  bgmVolume: number;
+  setBgmVolume: (val: number) => void;
+  readerFont: ReaderFont;
+  setReaderFont: (font: ReaderFont) => void;
+  // Audio Props
+  audioSources: string[];
+  trackTitle: string;
+  trackComposer: string;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ 
     activeTab, setActiveTab, language, setLanguage,
-    crtEnabled, setCrtEnabled, isLightTheme, setIsLightTheme
+    crtEnabled, setCrtEnabled, isLightTheme, setIsLightTheme,
+    bgmPlaying, setBgmPlaying, bgmVolume, setBgmVolume,
+    readerFont, setReaderFont,
+    audioSources, trackTitle, trackComposer
 }) => {
   const [showMobileSettings, setShowMobileSettings] = useState(false);
+  const [showDesktopSettings, setShowDesktopSettings] = useState(false);
+  const [showRoadmap, setShowRoadmap] = useState(false); 
+  const [showTerminal, setShowTerminal] = useState(false); 
+  // Modal Step: 0 = Closed, 1 = Confirm, 2 = Follow-up
+  const [exitModalStep, setExitModalStep] = useState<0 | 1 | 2>(0);
 
-  const translations = {
-    'zh-CN': {
-      home: '根控制台',
-      characters: '人员档案',
-      database: '数据资料',
-      reader: '阅读终端',
-      history: '系统日志',
-      config: '系统设置',
-      mobileHome: '主页',
-      mobileChars: '人员',
-      mobileData: '数据',
-      mobileRead: '阅读',
-      mobileLogs: '日志'
-    },
-    'zh-TW': {
-      home: '根控制台',
-      characters: '人員檔案',
-      database: '數據資料',
-      reader: '閱讀終端',
-      history: '系統日誌',
-      config: '系統設置',
-      mobileHome: '主頁',
-      mobileChars: '人員',
-      mobileData: '數據',
-      mobileRead: '閱讀',
-      mobileLogs: '日誌'
-    },
-    'en': {
-      home: 'ROOT_MENU',
-      characters: 'PERSONNEL',
-      database: 'DATA_BANK',
-      reader: 'READ_MODE',
-      history: 'SYS_LOGS',
-      config: 'SYS_CONFIG',
-      mobileHome: 'ROOT',
-      mobileChars: 'TEAM',
-      mobileData: 'DATA',
-      mobileRead: 'READ',
-      mobileLogs: 'LOGS'
-    }
-  };
-
-  const t = translations[language];
+  const t = navigationData[language];
+  const tModal = exitModalData[language];
 
   const navItems = [
     { id: 'home', label: t.home, mobileLabel: t.mobileHome, icon: Home },
     { id: 'characters', label: t.characters, mobileLabel: t.mobileChars, icon: Users },
     { id: 'database', label: t.database, mobileLabel: t.mobileData, icon: Database },
     { id: 'reader', label: t.reader, mobileLabel: t.mobileRead, icon: Book },
-    { id: 'history', label: t.history, mobileLabel: t.mobileLogs, icon: Clock },
+    { id: 'sidestories', label: t.sidestories, mobileLabel: t.mobileSide, icon: GitBranch },
   ];
 
   const cycleLanguage = () => {
@@ -86,102 +70,248 @@ const Navigation: React.FC<NavigationProps> = ({
     return 'EN';
   };
 
+  const handleOstClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      setExitModalStep(1); // Open to Step 1
+  };
+
+  const confirmExit = () => {
+      window.open("https://cdn.zeroxv.cn/", "_blank");
+      setExitModalStep(0);
+  };
+
+  const handleMistake = () => {
+      setExitModalStep(2); // Go to Step 2
+  };
+
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 md:static md:w-72 md:h-full bg-ash-black border-t-2 md:border-t-0 md:border-r-2 border-ash-light/20 z-50 flex md:flex-col justify-between p-2 md:p-6 shadow-2xl transition-colors duration-300 md:overflow-y-auto no-scrollbar">
-        <div className="hidden md:block mb-8 border-b-2 border-ash-light/20 pb-6 shrink-0">
-          <div className="flex items-center gap-2 mb-2">
-              <Cpu className="text-ash-light animate-pulse" />
-              <div className="w-2 h-2 bg-ash-light"></div>
-              <div className="w-2 h-2 bg-ash-gray"></div>
+      {showRoadmap && (
+          <RoadmapPage 
+            language={language} 
+            onBack={() => setShowRoadmap(false)} 
+          />
+      )}
+
+      {/* Render Temporary Terminal Overlay */}
+      {showTerminal && (
+          <TemporaryTerminal 
+            language={language}
+            onClose={() => setShowTerminal(false)}
+          />
+      )}
+
+      <div className="fixed top-4 right-4 z-50 lg:hidden w-auto flex justify-end animate-fade-in max-w-[80vw] landscape:top-2 landscape:right-2">
+          <BackgroundMusic 
+              isPlaying={bgmPlaying} 
+              onToggle={() => setBgmPlaying(!bgmPlaying)}
+              volume={bgmVolume}
+              onVolumeChange={setBgmVolume}
+              audioSources={audioSources}
+              trackTitle={trackTitle}
+              trackComposer={trackComposer}
+              className="shadow-2xl opacity-90 scale-90 origin-top-right"
+          />
+      </div>
+
+      <nav className="fixed bottom-0 left-0 right-0 lg:static lg:w-72 lg:h-full bg-ash-black border-t-2 lg:border-t-0 lg:border-r-2 border-ash-light/20 z-50 flex lg:flex-col justify-between p-2 lg:p-6 shadow-2xl transition-colors duration-300 lg:overflow-y-auto no-scrollbar font-custom-02 landscape:p-1">
+        <div className="hidden lg:block mb-8 border-b-2 border-ash-light/20 pb-6 shrink-0">
+          <div className="flex items-center gap-4 mb-4">
+               <div className="relative w-12 h-12 bg-ash-black border border-ash-gray/50 p-1 shadow-hard group">
+                   <img 
+                      src="https://free.picui.cn/free/2025/12/08/6936e856897d6.png" 
+                      alt="Nova Labs"
+                      className="w-full h-full object-contain filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
+                   />
+              </div>
+              <div className="flex flex-col gap-1">
+                  <div className="w-2 h-2 bg-ash-light animate-pulse"></div>
+                  <div className="w-2 h-2 bg-ash-gray"></div>
+              </div>
           </div>
           <h1 className="text-4xl font-black text-ash-light tracking-tighter uppercase mb-1" style={{ textShadow: '2px 2px 0 #333' }}>
             NOVA<br/>LABS
           </h1>
-          <div className="text-[10px] text-ash-gray font-mono bg-ash-dark p-1 inline-block border border-ash-gray">
-            ARCHIVE_SYS // V.3.1_LEGACY
+          {/* Updated version to TL.1.16-D */}
+          <div className="text-[10px] text-ash-gray font-custom-02 bg-ash-dark p-1 inline-block border border-ash-gray">
+            ARCHIVE_SYS // TL.1.16-D
           </div>
         </div>
 
-        <div className="flex md:flex-col justify-between md:justify-start w-full gap-1 md:gap-3 md:mb-auto shrink-0">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveTab(item.id);
-                setShowMobileSettings(false);
-              }}
-              className={`flex-1 md:flex-none flex flex-col md:flex-row items-center justify-center md:justify-start py-2 md:px-4 md:py-4 border-2 transition-all duration-300 group relative overflow-hidden ${
-                activeTab === item.id
-                  ? 'bg-ash-light text-ash-black border-ash-light shadow-hard'
-                  : 'bg-ash-black text-ash-gray border-ash-gray/30 hover:border-ash-light hover:text-ash-light'
-              }`}
-            >
-              {/* Active Indicator Pattern */}
-              {activeTab === item.id && (
-                  <div className="absolute inset-0 bg-halftone opacity-20 pointer-events-none" />
-              )}
+        <div className="flex lg:flex-col justify-between lg:justify-start w-full gap-1 lg:gap-3 lg:mb-auto shrink-0 landscape:gap-1">
+          {navItems.map((item, index) => {
+            const isReader = item.id === 'reader';
+            const isSide = item.id === 'sidestories';
+            const isStoryItem = isReader || isSide;
+            // Separator logic: Reader is index 3. Separator should be BEFORE Reader.
+            const showSeparator = index === 3;
 
-              <item.icon size={18} className="mb-1 md:mb-0 md:mr-3 z-10" strokeWidth={2.5} />
-              
-              {/* Desktop Label */}
-              <span className="hidden md:inline text-sm font-bold tracking-widest z-10 whitespace-normal text-left">{item.label}</span>
-              
-              {/* Mobile Label */}
-              <span className="md:hidden text-[10px] font-bold tracking-widest z-10 whitespace-nowrap">{item.mobileLabel}</span>
-            </button>
-          ))}
+            return (
+              <React.Fragment key={item.id}>
+                {showSeparator && (
+                    <div className="hidden lg:flex items-center gap-2 my-2 opacity-50">
+                        <div className="h-px bg-ash-gray flex-1"></div>
+                        <div className="text-[9px] font-mono text-ash-gray">{t.archives}</div>
+                        <div className="h-px bg-ash-gray flex-1"></div>
+                    </div>
+                )}
+                
+                <button
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setShowMobileSettings(false);
+                  }}
+                  className={`flex-1 lg:w-full lg:flex-none flex flex-col lg:flex-row items-center justify-center lg:justify-start transition-all duration-300 group relative overflow-hidden landscape:py-1 
+                    ${isStoryItem ? 'lg:py-6 lg:px-6 lg:my-1 lg:border-l-4 border-y-2 lg:border-y-0 lg:border-r-0' : 'py-2 lg:px-4 lg:py-4 border-2'}
+                    
+                    ${activeTab === item.id 
+                        ? (isSide 
+                            ? 'bg-cyan-950/30 text-cyan-400 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]' 
+                            : 'bg-ash-light text-ash-black border-ash-light shadow-hard')
+                        : (isSide
+                            ? 'bg-ash-black text-cyan-600 border-cyan-900/50 hover:bg-cyan-950/20 hover:text-cyan-400 hover:border-cyan-500'
+                            : isReader 
+                                ? 'bg-ash-black text-ash-light border-ash-gray/60 hover:bg-ash-dark hover:border-ash-light'
+                                : 'bg-ash-black text-ash-gray border-ash-gray/30 hover:border-ash-light hover:text-ash-light')
+                    }
+                  `}
+                >
+                  {activeTab === item.id && (
+                      <div className="absolute inset-0 bg-halftone opacity-20 pointer-events-none" />
+                  )}
+                  
+                  <item.icon 
+                    size={isStoryItem ? 22 : 18} 
+                    className={`mb-1 lg:mb-0 lg:mr-3 z-10 transition-transform landscape:mb-0.5 landscape:size-4 ${isStoryItem && activeTab !== item.id ? 'group-hover:scale-110' : ''}`} 
+                    strokeWidth={isStoryItem ? 2.5 : 2} 
+                  />
+                  
+                  <span className={`hidden lg:inline font-bold tracking-widest z-10 whitespace-normal text-left ${isStoryItem ? 'text-lg uppercase font-black' : 'text-sm'}`}>
+                    {item.label}
+                  </span>
+                  
+                  <span className="lg:hidden text-[10px] font-bold tracking-widest z-10 whitespace-nowrap landscape:text-[8px]">{item.mobileLabel}</span>
+                  
+                  {isStoryItem && (
+                    <div className={`absolute top-1 right-1 lg:top-1/2 lg:-translate-y-1/2 lg:right-4 w-1.5 h-1.5 opacity-50 rounded-full lg:rounded-none lg:w-1 lg:h-8 ${isSide ? 'bg-cyan-500' : 'bg-ash-light'}`}></div>
+                  )}
+                </button>
+              </React.Fragment>
+            );
+          })}
           
-          {/* Mobile Settings Toggle */}
           <button
             onClick={() => setShowMobileSettings(!showMobileSettings)}
-            className={`flex-1 md:hidden flex flex-col items-center justify-center py-2 border-2 transition-all duration-300 group relative overflow-hidden ${
+            className={`flex-1 lg:hidden flex flex-col items-center justify-center py-2 border-2 transition-all duration-300 group relative overflow-hidden landscape:py-1 ${
               showMobileSettings
                 ? 'bg-ash-light text-ash-black border-ash-light shadow-hard'
-                : 'bg-ash-black text-ash-gray border-ash-gray/30 hover:border-ash-light hover:text-ash-light'
+                : 'bg-ash-black text-ash-gray border-ash-gray/50 hover:border-ash-light hover:text-ash-light'
             }`}
           >
             {showMobileSettings && (
                 <div className="absolute inset-0 bg-halftone opacity-20 pointer-events-none" />
             )}
-            <Settings size={18} className="mb-1 z-10" strokeWidth={2.5} />
-            <span className="text-[10px] font-bold tracking-widest z-10">CFG</span>
+            <Settings size={18} className="mb-1 z-10 landscape:mb-0.5 landscape:size-4" strokeWidth={2.5} />
+            <span className="text-[10px] font-bold tracking-widest z-10 landscape:text-[8px]">{t.cfg}</span>
           </button>
-        </div>
 
-        {/* System Configuration Controls (Desktop Only) */}
-        <div className="hidden md:flex flex-col gap-2 mt-8 border-t-2 border-dashed border-ash-gray/30 pt-6 shrink-0">
-          <div className="text-[10px] text-ash-gray font-mono mb-1 uppercase px-1">[SYSTEM_CONFIG]</div>
+          {/* New Temporary Terminal Button - Unified Style */}
           <button 
-            onClick={cycleLanguage}
-            className="flex items-center justify-between w-full px-3 py-3 border-2 transition-all duration-300 shadow-hard bg-ash-black text-ash-gray border-ash-gray/50 hover:border-ash-light hover:text-ash-light group"
+            onClick={() => setShowTerminal(true)}
+            className={`
+                hidden lg:flex w-full flex-col lg:flex-row items-center justify-start transition-all duration-300 group relative overflow-hidden
+                lg:py-6 lg:px-6 lg:my-1 lg:border-l-4 border-y-2 lg:border-y-0 lg:border-r-0
+                bg-ash-black text-emerald-600 border-emerald-900/50
+                hover:bg-emerald-950/20 hover:text-emerald-400 hover:border-emerald-500
+                shadow-hard-sm lg:mt-1
+            `}
           >
-            <div className="flex items-center gap-3">
-              <Globe size={16} />
-              <span className="text-[10px] font-mono font-bold uppercase">Language</span>
-            </div>
-            <span className="text-[10px] font-mono font-bold">{getLangLabel()}</span>
+             <div className="absolute inset-0 bg-halftone opacity-10 pointer-events-none" />
+             
+             <Radio 
+                size={22} 
+                className="mb-1 lg:mb-0 lg:mr-3 z-10 transition-transform group-hover:scale-110 group-hover:animate-pulse" 
+                strokeWidth={2.5} 
+             />
+             
+             <div className="flex flex-col items-start z-10">
+                 <span className="hidden lg:inline text-lg uppercase font-black tracking-widest whitespace-normal text-left">
+                    {t.terminal}
+                 </span>
+                 <span className="hidden lg:inline text-[9px] font-mono opacity-60">{t.t04Active}</span>
+             </div>
+             
+             {/* Right Bar Indicator (Unified with other story items) */}
+             <div className="absolute top-1 right-1 lg:top-1/2 lg:-translate-y-1/2 lg:right-4 w-1.5 h-1.5 opacity-50 rounded-full lg:rounded-none lg:w-1 lg:h-8 bg-emerald-500"></div>
           </button>
-          <BackgroundMusic />
-          <CRTToggle value={crtEnabled} onChange={setCrtEnabled} language={language} />
-          <ThemeToggle value={isLightTheme} onChange={setIsLightTheme} />
         </div>
 
-        <div className="hidden md:block mt-6 pt-4 border-t-2 border-dashed border-ash-gray/30 text-ash-gray text-[10px] font-mono leading-tight shrink-0">
-          <p className="mb-2">[CONNECTION_STATUS]</p>
+        <div className="hidden lg:flex flex-col gap-3 mt-8 pt-6 border-t-2 border-dashed border-ash-gray/30 shrink-0">
+          {/* Roadmap Button */}
+          <button 
+            onClick={() => setShowRoadmap(true)}
+            className="flex items-center justify-between px-4 py-4 border-2 border-amber-900/50 bg-amber-950/10 text-amber-500 hover:bg-amber-900/20 hover:border-amber-600 transition-all group relative overflow-hidden shadow-hard-sm w-full text-left"
+          >
+             <div className="flex items-center gap-3 z-10">
+                <Map size={20} className="group-hover:animate-pulse" />
+                <span className="font-black tracking-widest text-sm uppercase">{t.roadmap}</span>
+             </div>
+             <ArrowRight size={14} className="z-10 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-500 to-transparent group-hover:opacity-20 transition-opacity"></div>
+          </button>
+
+          <button 
+            onClick={handleOstClick}
+            className="flex items-center justify-between px-4 py-4 border-2 border-ash-gray/50 bg-ash-dark/20 text-ash-gray hover:bg-ash-light hover:text-ash-black hover:border-ash-light transition-all group relative overflow-hidden shadow-hard-sm w-full text-left"
+          >
+             <div className="flex items-center gap-3 z-10">
+                <Headphones size={20} className="group-hover:animate-bounce" />
+                <span className="font-black tracking-widest text-sm">{t.ost}</span>
+             </div>
+             <ExternalLink size={14} className="z-10 opacity-50 group-hover:opacity-100 transition-opacity" />
+             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-ash-light to-transparent group-hover:opacity-20 transition-opacity"></div>
+          </button>
+
+          <BackgroundMusic 
+              isPlaying={bgmPlaying} 
+              onToggle={() => setBgmPlaying(!bgmPlaying)}
+              volume={bgmVolume}
+              onVolumeChange={setBgmVolume}
+              audioSources={audioSources}
+              trackTitle={trackTitle}
+              trackComposer={trackComposer}
+          />
+
+          <div className="mt-2">
+            <div className="text-[10px] text-ash-gray font-custom-02 mb-1 uppercase px-1">{t.system}</div>
+            <button
+                onClick={() => setShowDesktopSettings(true)}
+                className={`w-full flex items-center gap-3 px-4 py-3 border-2 transition-all duration-300 group shadow-hard ${
+                    showDesktopSettings
+                    ? 'bg-ash-light text-ash-black border-ash-light'
+                    : 'bg-ash-black text-ash-gray border-ash-gray/50 hover:border-ash-light hover:text-ash-light'
+                }`}
+            >
+                <Settings size={18} className={`transition-transform duration-700 ${showDesktopSettings ? 'rotate-180' : ''}`} />
+                <span className="text-sm font-bold tracking-widest uppercase">{t.config}</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="hidden lg:block mt-6 pt-4 border-t-2 border-dashed border-ash-gray/30 text-ash-gray text-[10px] font-custom-02 leading-tight shrink-0">
+          <p>&gt; ENCRYPTION: STATIC</p>
           <div className="w-full bg-ash-dark h-2 border border-ash-gray mb-1">
               <div className="bg-ash-light h-full w-[98%] animate-pulse"></div>
           </div>
-          <p>> ENCRYPTION: STATIC</p>
-          <p>> PING: 0.04ms</p>
+          <p>&gt; PING: 0.04ms</p>
         </div>
       </nav>
 
-      {/* Mobile Settings Overlay */}
+      {/* Settings Overlays */}
       {showMobileSettings && (
-        <div className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-[2px]" onClick={() => setShowMobileSettings(false)}>
+        <div className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-[2px]" onClick={() => setShowMobileSettings(false)}>
             <div 
-                className="absolute bottom-[90px] left-4 right-4 bg-ash-black border-2 border-ash-light p-5 shadow-hard animate-slide-in z-50 max-h-[70vh] overflow-y-auto"
+                className="absolute bottom-[90px] left-4 right-4 bg-ash-black border-2 border-ash-light p-5 shadow-hard animate-slide-in z-50 max-h-[70vh] overflow-y-auto landscape:bottom-12 landscape:p-3"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between mb-4 border-b-2 border-ash-gray/30 pb-2">
@@ -189,10 +319,44 @@ const Navigation: React.FC<NavigationProps> = ({
                         <Settings size={16} className="text-ash-light" />
                         <span className="text-xs font-bold text-ash-light font-mono uppercase tracking-wider">{t.config}</span>
                     </div>
-                    <div className="text-[10px] text-ash-gray font-mono">V.3.1</div>
+                    {/* Updated version to TL.1.16-D */}
+                    <div className="text-[10px] text-ash-gray font-mono">TL.1.16-D</div>
                 </div>
                 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 landscape:grid landscape:grid-cols-2">
+                    <button 
+                      onClick={() => { setShowRoadmap(true); setShowMobileSettings(false); }}
+                      className="flex items-center justify-between w-full px-3 py-3 border-2 border-amber-900/50 bg-amber-950/10 text-amber-500 hover:bg-amber-900/20 transition-all group shadow-hard-sm"
+                    >
+                       <div className="flex items-center gap-3">
+                          <Map size={16} />
+                          <span className="text-[10px] font-mono font-black uppercase tracking-widest">{t.roadmap}</span>
+                       </div>
+                       <ArrowRight size={14} className="opacity-50" />
+                    </button>
+
+                    <button 
+                      onClick={() => { setShowTerminal(true); setShowMobileSettings(false); }}
+                      className="flex items-center justify-between w-full px-3 py-3 border-2 border-emerald-900/50 bg-emerald-950/10 text-emerald-500 hover:bg-emerald-900/20 transition-all group shadow-hard-sm"
+                    >
+                       <div className="flex items-center gap-3">
+                          <Radio size={16} />
+                          <span className="text-[10px] font-mono font-black uppercase tracking-widest">{t.terminal}</span>
+                       </div>
+                       <div className="text-[8px] bg-emerald-950 px-1 border border-emerald-500/30">T-04</div>
+                    </button>
+
+                    <button 
+                      onClick={handleOstClick}
+                      className="flex items-center justify-between w-full px-3 py-3 border-2 border-ash-gray/50 bg-ash-dark/20 text-ash-gray hover:bg-ash-light hover:text-ash-black transition-all group shadow-hard-sm"
+                    >
+                       <div className="flex items-center gap-3">
+                          <Headphones size={16} />
+                          <span className="text-[10px] font-mono font-black uppercase tracking-widest">{t.ost}</span>
+                       </div>
+                       <ExternalLink size={14} className="opacity-50" />
+                    </button>
+
                     <button 
                       onClick={cycleLanguage}
                       className="flex items-center justify-between w-full px-3 py-3 border-2 transition-all duration-300 shadow-hard bg-ash-black text-ash-gray border-ash-gray/50 active:border-ash-light active:text-ash-light group"
@@ -203,16 +367,125 @@ const Navigation: React.FC<NavigationProps> = ({
                       </div>
                       <span className="text-[10px] font-mono font-bold">{getLangLabel()}</span>
                     </button>
-                    <BackgroundMusic />
+                    <FontSelector value={readerFont} onChange={setReaderFont} language={language} />
                     <CRTToggle value={crtEnabled} onChange={setCrtEnabled} language={language} />
+                    <FullscreenToggle language={language} />
                     <ThemeToggle value={isLightTheme} onChange={setIsLightTheme} />
-                </div>
-                
-                <div className="mt-4 pt-2 border-t border-dashed border-ash-gray/30 text-[10px] text-ash-gray font-mono text-center">
-                    NOVA_LABS_ARCHIVE // SYSTEM_OVERLAY
                 </div>
             </div>
         </div>
+      )}
+
+      {/* Desktop Modal */}
+      {showDesktopSettings && (
+        <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-md animate-fade-in" onClick={() => setShowDesktopSettings(false)}>
+            <div 
+                className="w-full max-w-xl bg-ash-black border-2 border-ash-light p-8 shadow-hard relative overflow-hidden"
+                onClick={e => e.stopPropagation()}
+            >
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                   <Settings size={120} />
+                </div>
+
+                <div className="flex items-center justify-between mb-8 border-b-2 border-ash-gray pb-4 relative z-10">
+                    <div className="flex items-center gap-3">
+                        <Settings size={24} className="text-ash-light" />
+                        <h2 className="text-xl font-black text-ash-light uppercase tracking-[0.2em]">{t.settingsTitle}</h2>
+                    </div>
+                    <button onClick={() => setShowDesktopSettings(false)} className="text-ash-gray hover:text-ash-light transition-colors">
+                        <X size={24} />
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                    <div className="space-y-6">
+                        <div className="space-y-1">
+                            <div className="text-[10px] text-ash-gray font-mono uppercase">{t.uiLanguage}</div>
+                            <button 
+                                onClick={cycleLanguage}
+                                className="w-full flex items-center justify-between px-4 py-3 border-2 border-ash-gray/30 bg-ash-dark/30 text-ash-gray hover:border-ash-light hover:text-ash-light transition-all shadow-hard-sm"
+                            >
+                                <span className="text-sm font-bold font-mono tracking-widest">LANGUAGE</span>
+                                <span className="text-sm font-bold font-mono">{getLangLabel()}</span>
+                            </button>
+                        </div>
+                        
+                        <div className="space-y-1">
+                             <div className="text-[10px] text-ash-gray font-mono uppercase">{t.renderFonts}</div>
+                             <FontSelector value={readerFont} onChange={setReaderFont} language={language} />
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="text-[10px] text-ash-gray font-mono uppercase">{t.displayFx}</div>
+                        <CRTToggle value={crtEnabled} onChange={setCrtEnabled} language={language} />
+                        <FullscreenToggle language={language} />
+                        <ThemeToggle value={isLightTheme} onChange={setIsLightTheme} />
+                    </div>
+                </div>
+
+                <div className="mt-10 pt-6 border-t border-dashed border-ash-gray/30 flex justify-between items-center relative z-10">
+                    <div className="text-[10px] font-mono text-ash-gray">
+                        SYSTEM_BUILD: 2025.12.24<br/>
+                        ARCHIVE_VER: TL.1.16-D
+                    </div>
+                    <button 
+                        onClick={() => setShowDesktopSettings(false)}
+                        className="px-8 py-2 bg-ash-light text-ash-black font-black text-sm uppercase shadow-hard hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+                    >
+                        {t.apply}
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* Exit Modal (Byaki Theme) */}
+      {exitModalStep > 0 && (
+          <div className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setExitModalStep(0)}>
+              <div 
+                className="w-full max-w-lg bg-black border-2 border-emerald-500 p-6 md:p-8 shadow-[0_0_20px_rgba(16,185,129,0.3)] animate-slide-in relative"
+                onClick={e => e.stopPropagation()}
+              >
+                  <div className="mb-6 flex items-start gap-4">
+                      <div className="w-12 h-12 md:w-16 md:h-16 shrink-0 bg-emerald-950/20 border border-emerald-500/50 p-1">
+                          <img src="https://cik07-cos.7moor-fs2.com/im/4d2c3f00-7d4c-11e5-af15-41bf63ae4ea0/d19ea972df034757/byq.jpg" alt="Byaki" className="w-full h-full object-cover filter contrast-125" />
+                      </div>
+                      <div className="flex-1">
+                          <div className="text-xs font-black text-emerald-400 mb-1 uppercase tracking-widest border-b border-emerald-500/30 pb-1">{tModal.speaker}</div>
+                          <p className="text-sm md:text-base text-emerald-600/80 font-custom-02 leading-relaxed">
+                              {exitModalStep === 1 ? tModal.message : tModal.msg2}
+                          </p>
+                      </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                      {exitModalStep === 1 ? (
+                          <>
+                            <button 
+                                onClick={confirmExit}
+                                className="w-full text-left px-4 py-3 border-2 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-black transition-all font-bold text-sm"
+                            >
+                                {tModal.opt1}
+                            </button>
+                            <button 
+                                onClick={handleMistake}
+                                className="w-full text-left px-4 py-3 border-2 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-black transition-all font-bold text-sm"
+                            >
+                                {tModal.opt2}
+                            </button>
+                          </>
+                      ) : (
+                          <button 
+                                onClick={() => setExitModalStep(0)}
+                                className="w-full text-left px-4 py-3 border-2 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-black transition-all font-bold text-sm italic opacity-70"
+                            >
+                                {tModal.opt3}
+                            </button>
+                      )}
+                  </div>
+              </div>
+          </div>
       )}
     </>
   );

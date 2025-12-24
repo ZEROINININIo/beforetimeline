@@ -1,3 +1,5 @@
+
+
 export type Language = 'zh-CN' | 'zh-TW' | 'en';
 
 export interface CharacterStats {
@@ -8,23 +10,39 @@ export interface CharacterStats {
   resonance: number;   // 共鸣/量子适应性
 }
 
-export interface Character {
-  id: string;
+export interface CharacterTranslation {
   name: string;
-  alias?: string;
   role: string;
   description: string[];
   tags: string[];
-  stats: CharacterStats;
   quote?: string;
+}
+
+export interface Character {
+  id: string;
+  alias?: string;
+  stats: CharacterStats;
   themeColor?: string;
+  translations: {
+    'zh-CN': CharacterTranslation;
+    'zh-TW': CharacterTranslation;
+    'en': CharacterTranslation;
+  };
+}
+
+export interface LoreTranslation {
+  title: string;
+  content: string[];
 }
 
 export interface LoreEntry {
   id: string;
-  title: string;
-  category: 'World' | 'Organization' | 'Technology' | 'Society';
-  content: string[]; // Array of paragraphs
+  category: 'World' | 'Organization' | 'Technology' | 'Society' | 'Setting';
+  translations: {
+    'zh-CN': LoreTranslation;
+    'zh-TW': LoreTranslation;
+    'en': LoreTranslation;
+  };
 }
 
 export interface ChapterTranslation {
@@ -36,12 +54,20 @@ export interface ChapterTranslation {
 export interface Chapter {
   id: string;
   date: string;
-  status?: 'published' | 'locked';
+  status?: 'published' | 'locked' | 'corrupted';
   translations: {
     'zh-CN': ChapterTranslation;
     'zh-TW': ChapterTranslation;
     'en': ChapterTranslation;
   };
+}
+
+export interface SideStoryVolume {
+  id: string;
+  title: string; 
+  titleEn: string;
+  status: 'unlocked' | 'locked' | 'corrupted';
+  chapters: Chapter[];
 }
 
 export interface NovelData {
@@ -51,4 +77,20 @@ export interface NovelData {
   characters: Character[];
   lore: LoreEntry[];
   chapters: Chapter[];
+}
+
+export interface SideCharacterData {
+  id: string;
+  group: string; // Grouping for tree view
+  isLocked?: boolean; // Lock status
+  translations: {
+    [key in Language]: {
+      name: string;
+      enName: string;
+      role: string;
+      tags: string[];
+      description: string[];
+      quote?: string;
+    }
+  }
 }
